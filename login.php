@@ -1,6 +1,6 @@
 <?php 
 include("./connection.php");
-session_start();
+
 
 $msg = "";
 $msg_type = "";

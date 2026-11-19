@@ -21,30 +21,45 @@ $user_id = intval($_SESSION['user_id'] ?? 0);
         
         <div class="container-fluid px-4 py-4">
 
+<?php if (empty($db_connected)): ?>
+        <!-- ⚠️ Live Hosting Database Alert -->
+        <div class="alert alert-warning border border-warning border-opacity-50 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-3 p-3" role="alert">
+            <i class="fas fa-database fa-2x text-warning flex-shrink-0"></i>
+            <div>
+                <h6 class="fw-bold mb-1 text-dark">Database Connection Needed</h6>
+                <p class="small text-secondary mb-0">
+                    The portal cannot connect to the MySQL database at <code><?= htmlspecialchars($DB_HOST ?? 'localhost'); ?></code>.
+                    If you are on <strong>InfinityFree</strong> or live hosting, please update your credentials in <code>connection.php</code> (or create <code>config.local.php</code>) and import <code>database.sql</code> via phpMyAdmin.
+                    <em>(Demo sessions will continue to work safely in read-only preview mode)</em>.
+                </p>
+            </div>
+        </div>
+<?php endif; ?>
+
 <?php
 // =========================================================================
 //                             ADMIN DASHBOARD
 // =========================================================================
 if ($role === 'admin') {
     // 🔹 Compute live metrics from database
-    $total_courses_res = mysqli_query($connec, "SELECT COUNT(*) as total FROM course");
-    $total_courses = ($total_courses_res) ? mysqli_fetch_assoc($total_courses_res)['total'] : 0;
+    $total_courses_res = ($connec) ? mysqli_query($connec, "SELECT COUNT(*) as total FROM course") : false;
+    $total_courses = ($total_courses_res) ? mysqli_fetch_assoc($total_courses_res)['total'] : (!empty($_SESSION['is_demo']) ? 16 : 0);
 
-    $public_courses_res = mysqli_query($connec, "SELECT COUNT(*) as total FROM course WHERE status='public'");
-    $public_courses = ($public_courses_res) ? mysqli_fetch_assoc($public_courses_res)['total'] : 0;
+    $public_courses_res = ($connec) ? mysqli_query($connec, "SELECT COUNT(*) as total FROM course WHERE status='public'") : false;
+    $public_courses = ($public_courses_res) ? mysqli_fetch_assoc($public_courses_res)['total'] : (!empty($_SESSION['is_demo']) ? 12 : 0);
 
-    $private_courses_res = mysqli_query($connec, "SELECT COUNT(*) as total FROM course WHERE status='private'");
-    $private_courses = ($private_courses_res) ? mysqli_fetch_assoc($private_courses_res)['total'] : 0;
+    $private_courses_res = ($connec) ? mysqli_query($connec, "SELECT COUNT(*) as total FROM course WHERE status='private'") : false;
+    $private_courses = ($private_courses_res) ? mysqli_fetch_assoc($private_courses_res)['total'] : (!empty($_SESSION['is_demo']) ? 4 : 0);
 
-    $students_res = mysqli_query($connec, "SELECT COUNT(*) as total FROM login WHERE role='student'");
-    $students_enrolled = ($students_res) ? mysqli_fetch_assoc($students_res)['total'] : 0;
+    $students_res = ($connec) ? mysqli_query($connec, "SELECT COUNT(*) as total FROM login WHERE role='student'") : false;
+    $students_enrolled = ($students_res) ? mysqli_fetch_assoc($students_res)['total'] : (!empty($_SESSION['is_demo']) ? 25 : 0);
 
     // Distinct course programs offered
-    $prog_res = mysqli_query($connec, "SELECT COUNT(DISTINCT title) as total FROM course");
-    $total_programs = ($prog_res) ? mysqli_fetch_assoc($prog_res)['total'] : 0;
+    $prog_res = ($connec) ? mysqli_query($connec, "SELECT COUNT(DISTINCT title) as total FROM course") : false;
+    $total_programs = ($prog_res) ? mysqli_fetch_assoc($prog_res)['total'] : (!empty($_SESSION['is_demo']) ? 4 : 0);
 
     // Recent students / enrollments query
-    $recent_students = mysqli_query($connec, "SELECT user_id, fname, lname, email, role, course_name FROM login WHERE role='student' ORDER BY user_id DESC LIMIT 8");
+    $recent_students = ($connec) ? mysqli_query($connec, "SELECT user_id, fname, lname, email, role, course_name FROM login WHERE role='student' ORDER BY user_id DESC LIMIT 8") : false;
 ?>
             <!-- 🔹 Page Header -->
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
@@ -219,7 +234,7 @@ if ($role === 'admin') {
 // =========================================================================
 } elseif ($role === 'student') {
     // Current student data
-    $courseQuery = mysqli_query($connec, "SELECT course_name FROM login WHERE user_id='$user_id' LIMIT 1");
+    $courseQuery = ($connec) ? mysqli_query($connec, "SELECT course_name FROM login WHERE user_id='$user_id' LIMIT 1") : false;
     $studentCourse = ($courseQuery && mysqli_num_rows($courseQuery) > 0)
         ? trim(mysqli_fetch_assoc($courseQuery)['course_name'])
         : ($_SESSION['course_name'] ?? "");
@@ -228,15 +243,15 @@ if ($role === 'admin') {
              JOIN enrollments ON course.course_id = enrollments.course_id 
              WHERE enrollments.user_id = '$user_id' 
              ORDER BY course.course_id DESC";
-    $vrun = mysqli_query($connec, $vsql);
+    $vrun = ($connec) ? mysqli_query($connec, $vsql) : false;
 
     if (!$vrun || mysqli_num_rows($vrun) == 0) {
-        if (!empty($studentCourse)) {
+        if (!empty($studentCourse) && $connec) {
             $escaped_sc = mysqli_real_escape_string($connec, $studentCourse);
             $vsql = "SELECT * FROM course WHERE TRIM(LOWER(title)) = TRIM(LOWER('$escaped_sc')) ORDER BY course_id DESC";
             $vrun = mysqli_query($connec, $vsql);
         }
-        if ((!$vrun || mysqli_num_rows($vrun) == 0) && !empty($_SESSION['is_demo'])) {
+        if ((!$vrun || mysqli_num_rows($vrun) == 0) && !empty($_SESSION['is_demo']) && $connec) {
             $vsql = "SELECT * FROM course WHERE status='public' ORDER BY course_id DESC";
             $vrun = mysqli_query($connec, $vsql);
         }

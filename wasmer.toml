@@ -1,0 +1,17 @@
+[package]
+name = "courseerpdemo"
+version = "1.0.0"
+description = "CourseERP LMS Demo Application"
+license = "MIT"
+
+[dependencies]
+"php/php" = "^8.2"
+
+[fs]
+"/app" = "."
+
+[[command]]
+name = "serve"
+module = "php/php:php"
+runner = "wasi"
+annotations = { wasi = { env = ["PORT=8080"], main_args = ["-S", "0.0.0.0:8080", "-t", "/app"] } }

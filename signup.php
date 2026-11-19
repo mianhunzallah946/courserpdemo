@@ -16,13 +16,17 @@ $msg = "";
 $msg_type = "";
 
 if (isset($_POST['signup'])) {
-    $fname = mysqli_real_escape_string($connec, trim($_POST['fname'] ?? ''));
-    $lname = mysqli_real_escape_string($connec, trim($_POST['lname'] ?? ''));
-    $email = mysqli_real_escape_string($connec, trim($_POST['email'] ?? ''));
-    $password = mysqli_real_escape_string($connec, trim($_POST['password'] ?? ''));
-    $confirmpassword = mysqli_real_escape_string($connec, trim($_POST['confirmpassword'] ?? ''));
-    $role = mysqli_real_escape_string($connec, trim($_POST['role'] ?? 'student'));
-    $course_name = mysqli_real_escape_string($connec, trim($_POST['course_name'] ?? ''));
+    if (!$connec) {
+        $msg = "Database connection error. Please configure MySQL in connection.php / config.local.php before registering.";
+        $msg_type = "danger";
+    } else {
+        $fname = mysqli_real_escape_string($connec, trim($_POST['fname'] ?? ''));
+        $lname = mysqli_real_escape_string($connec, trim($_POST['lname'] ?? ''));
+        $email = mysqli_real_escape_string($connec, trim($_POST['email'] ?? ''));
+        $password = mysqli_real_escape_string($connec, trim($_POST['password'] ?? ''));
+        $confirmpassword = mysqli_real_escape_string($connec, trim($_POST['confirmpassword'] ?? ''));
+        $role = mysqli_real_escape_string($connec, trim($_POST['role'] ?? 'student'));
+        $course_name = mysqli_real_escape_string($connec, trim($_POST['course_name'] ?? ''));
 
     if (empty($fname) || empty($email) || empty($password)) {
         $msg = "Please fill in all required fields.";
@@ -76,6 +80,7 @@ if (isset($_POST['signup'])) {
                 $msg_type = "danger";
             }   
         }
+    }
     }
 }
 ?>

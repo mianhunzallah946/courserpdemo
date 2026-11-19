@@ -12,10 +12,10 @@ $user_id   = intval($_SESSION['user_id'] ?? 0);
 $user_role = $_SESSION['role'] ?? 'student';
 $course_id = intval($_GET['id'] ?? 0);
 
-// Strict enrollment check: Verify user is enrolled or is admin
+// Strict enrollment check: Verify user is enrolled or is admin or demo reviewer
 $is_authorized = false;
 
-if ($user_role === 'admin') {
+if ($user_role === 'admin' || !empty($_SESSION['is_demo'])) {
     $is_authorized = true;
 } else {
     // 1. Check direct enrollment record

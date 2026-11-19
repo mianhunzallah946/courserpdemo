@@ -222,7 +222,7 @@ if ($role === 'admin') {
     $courseQuery = mysqli_query($connec, "SELECT course_name FROM login WHERE user_id='$user_id' LIMIT 1");
     $studentCourse = ($courseQuery && mysqli_num_rows($courseQuery) > 0)
         ? trim(mysqli_fetch_assoc($courseQuery)['course_name'])
-        : "";
+        : ($_SESSION['course_name'] ?? "");
 
     $vsql = "SELECT course.* FROM course 
              JOIN enrollments ON course.course_id = enrollments.course_id 
@@ -234,6 +234,10 @@ if ($role === 'admin') {
         if (!empty($studentCourse)) {
             $escaped_sc = mysqli_real_escape_string($connec, $studentCourse);
             $vsql = "SELECT * FROM course WHERE TRIM(LOWER(title)) = TRIM(LOWER('$escaped_sc')) ORDER BY course_id DESC";
+            $vrun = mysqli_query($connec, $vsql);
+        }
+        if ((!$vrun || mysqli_num_rows($vrun) == 0) && !empty($_SESSION['is_demo'])) {
+            $vsql = "SELECT * FROM course WHERE status='public' ORDER BY course_id DESC";
             $vrun = mysqli_query($connec, $vsql);
         }
     }

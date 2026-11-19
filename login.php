@@ -5,6 +5,11 @@ session_start();
 $msg = "";
 $msg_type = "";
 
+if (isset($_GET['error']) && $_GET['error'] === 'invalid_demo_role') {
+    $msg = "Invalid demo role selected. Please choose Admin or Student.";
+    $msg_type = "danger";
+}
+
 if (isset($_POST['login'])) {
     $email = mysqli_real_escape_string($connec, trim($_POST['email']));
     $password = mysqli_real_escape_string($connec, trim($_POST['password']));
@@ -57,6 +62,43 @@ if (isset($_POST['login'])) {
 
     <!-- Master Theme -->
     <link href="css/style.css" rel="stylesheet">
+    <style>
+        .btn-demo {
+            font-size: 0.85rem;
+            transition: all 0.2s ease-in-out;
+            border: 1.5px solid transparent;
+        }
+        .btn-demo-admin {
+            background-color: #eff6ff;
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+        .btn-demo-admin:hover {
+            background-color: #1e40af;
+            color: #ffffff !important;
+            border-color: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+        }
+        .btn-demo-admin:hover i {
+            color: #ffffff !important;
+        }
+        .btn-demo-student {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border-color: #a7f3d0;
+        }
+        .btn-demo-student:hover {
+            background-color: #059669;
+            color: #ffffff !important;
+            border-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+        }
+        .btn-demo-student:hover i {
+            color: #ffffff !important;
+        }
+    </style>
 </head>
 <body class="bg-light d-flex align-items-center justify-content-center min-vh-100 py-5" style="background-color: #f8fafc !important;">
 
@@ -116,6 +158,35 @@ if (isset($_POST['login'])) {
                                 <a href="./signup.php" class="text-primary text-decoration-none fw-semibold small">Create Account</a>
                             </div>
                         </form>
+
+                        <!-- 🚀 One-Click Demo Access Section -->
+                        <div class="position-relative text-center my-4">
+                            <hr class="text-secondary opacity-25 m-0">
+                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-secondary text-uppercase fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.08em;">
+                                One-Click Demo Access
+                            </span>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <a href="./login_demo.php?role=admin" class="btn btn-demo btn-demo-admin w-100 py-2 rounded-3 text-decoration-none d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm" title="Explore portal with Admin Privileges">
+                                    <i class="fas fa-user-shield"></i>
+                                    <span>Demo Admin</span>
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="./login_demo.php?role=student" class="btn btn-demo btn-demo-student w-100 py-2 rounded-3 text-decoration-none d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm" title="Explore portal with Student Privileges">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <span>Demo Student</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <span class="badge bg-light text-secondary border px-3 py-1 rounded-pill" style="font-size: 0.72rem;">
+                                <i class="fas fa-shield-halved text-primary me-1"></i> Safe Sandbox • Read-only mode
+                            </span>
+                        </div>
 
                     </div>
                 </div>

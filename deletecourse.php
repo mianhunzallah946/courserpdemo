@@ -1,4 +1,7 @@
 <?php
+require_once(__DIR__ . '/demo_guard.php');
+block_demo_action('./manage_courses.php', '⚠️ Demo Mode: Deleting course modules is strictly disabled in demo mode.');
+
 include('./connection.php');
 $delid = $_GET['delid'];
 

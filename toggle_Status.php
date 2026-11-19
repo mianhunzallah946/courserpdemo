@@ -1,4 +1,7 @@
 <?php
+require_once(__DIR__ . '/demo_guard.php');
+block_demo_action('./manage_courses.php', '⚠️ Demo Mode: Modifying course status is disabled in demo mode.');
+
 include("./connection.php");
 
 if (isset($_POST['user_id'])) {

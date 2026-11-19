@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once(__DIR__ . '/demo_guard.php');
 include("./connection.php");
 
 // Admin authentication check
@@ -10,6 +11,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 // Handle fast status toggle
 if (isset($_POST['toggle_course_status'])) {
+    block_demo_action('./manage_courses.php', '⚠️ Demo Mode: Toggling course visibility is disabled in demo mode.');
     $cid = intval($_POST['course_id']);
     $new_status = ($_POST['current_status'] === 'public') ? 'private' : 'public';
     mysqli_query($connec, "UPDATE course SET status='$new_status' WHERE course_id='$cid'");
@@ -19,6 +21,7 @@ if (isset($_POST['toggle_course_status'])) {
 
 // Handle quick edit
 if (isset($_POST['update_course_title'])) {
+    block_demo_action('./manage_courses.php', '⚠️ Demo Mode: Editing course details is disabled in demo mode.');
     $cid = intval($_POST['course_id']);
     $new_title = mysqli_real_escape_string($connec, trim($_POST['title']));
     $new_status = mysqli_real_escape_string($connec, $_POST['status']);

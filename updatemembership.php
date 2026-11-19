@@ -2,6 +2,12 @@
 // ── Tell the browser this is a JSON response ──
 header('Content-Type: application/json');
 
+require_once(__DIR__ . '/demo_guard.php');
+if (is_demo_user()) {
+    echo json_encode(['status' => 'error', 'message' => 'Demo Mode: Membership modification is disabled in read-only mode.']);
+    exit();
+}
+
 include("./connection.php");
 
 if (isset($_POST['user_id']) && isset($_POST['membership'])) {

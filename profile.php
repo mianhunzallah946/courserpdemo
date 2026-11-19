@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once(__DIR__ . '/demo_guard.php');
 
 // Authentication Check
 if (!isset($_SESSION['email'])) {
@@ -15,8 +16,20 @@ $urun   = mysqli_query($connec, $usql);
 $ufet   = ($urun && mysqli_num_rows($urun) > 0) ? mysqli_fetch_assoc($urun) : null;
 
 if (!$ufet) {
-    header("Location: ./logout.php");
-    exit();
+    if (is_demo_user()) {
+        $ufet = [
+            'user_id'     => $_SESSION['user_id'] ?? 999991,
+            'email'       => $_SESSION['email'],
+            'fname'       => $_SESSION['fname'] ?? 'Demo',
+            'lname'       => $_SESSION['lname'] ?? 'User',
+            'role'        => $_SESSION['role'] ?? 'admin',
+            'membership'  => $_SESSION['membership'] ?? 'paid',
+            'course_name' => $_SESSION['course_name'] ?? 'Full Stack Web Development'
+        ];
+    } else {
+        header("Location: ./logout.php");
+        exit();
+    }
 }
 
 $msg = "";
@@ -24,7 +37,11 @@ $msg_type = "";
 
 // Handle Profile & Password Update
 if (isset($_POST['update_profile'])) {
-    $fname = trim(mysqli_real_escape_string($connec, $_POST['fname'] ?? ''));
+    if (is_demo_user()) {
+        $msg = "⚠️ Demo Mode: Profile updates and password changes are disabled in read-only demo mode.";
+        $msg_type = "warning";
+    } else {
+        $fname = trim(mysqli_real_escape_string($connec, $_POST['fname'] ?? ''));
     $lname = trim(mysqli_real_escape_string($connec, $_POST['lname'] ?? ''));
     $email = trim(mysqli_real_escape_string($connec, $_POST['email'] ?? ''));
     $new_password = $_POST['new_password'] ?? '';
@@ -97,6 +114,7 @@ if (isset($_POST['update_profile'])) {
                 }
             }
         }
+    }
     }
 }
 

@@ -1,4 +1,7 @@
 <?php
+require_once(__DIR__ . '/demo_guard.php');
+block_demo_action('./manageusers.php', '⚠️ Demo Mode: Deleting student/user records is strictly disabled in demo mode.');
+
 include('./connection.php');
 $delid = $_GET['delid'];
 

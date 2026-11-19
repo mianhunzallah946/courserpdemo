@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once(__DIR__ . '/demo_guard.php');
 include("./connection.php");
 
 // Admin authentication check
@@ -16,61 +17,66 @@ $courses = mysqli_query($connec, "SELECT DISTINCT title FROM course ORDER BY tit
 
 // ✅ Handle Form Submission
 if (isset($_POST['submit'])) {
-    $status = mysqli_real_escape_string($connec, $_POST['status'] ?? 'public');
-    $videos = $_FILES['video']['name'] ?? [];
-    $title = '';
-
-    if (isset($_POST['title_source']) && $_POST['title_source'] === 'new') {
-        $title = trim(mysqli_real_escape_string($connec, $_POST['new_title'] ?? ''));
-        if (empty($title)) {
-            $msg = "Course title is required.";
-            $msg_type = "danger";
-        } else {
-            $check = mysqli_query($connec, "SELECT title FROM course WHERE TRIM(LOWER(title)) = TRIM(LOWER('$title'))");
-            if ($check && mysqli_num_rows($check) > 0) {
-                $msg = "A course with this title already exists. Please choose another title or select it from existing courses.";
-                $msg_type = "warning";
-                $title = '';
-            }
-        }
+    if (is_demo_user()) {
+        $msg = "⚠️ Demo Mode: Adding new courses and uploading video files is disabled in read-only demo mode.";
+        $msg_type = "warning";
     } else {
-        $title = trim(mysqli_real_escape_string($connec, $_POST['existing_title'] ?? ''));
-        if (empty($title)) {
-            $msg = "Please select an existing course or choose to add a new course title.";
-            $msg_type = "danger";
-        }
-    }
+        $status = mysqli_real_escape_string($connec, $_POST['status'] ?? 'public');
+        $videos = $_FILES['video']['name'] ?? [];
+        $title = '';
 
-    if (!empty($title) && !empty($videos[0])) {
-        $allowed = ['mp4', 'mov', 'mkv', 'webm', 'avi', 'wmv'];
-        $uploaded = [];
-
-        if (!is_dir("./coursevideo/")) {
-            mkdir("./coursevideo/", 0777, true);
-        }
-
-        foreach ($videos as $key => $video) {
-            if (empty($video)) continue;
-            $ext = strtolower(pathinfo($video, PATHINFO_EXTENSION));
-            if (in_array($ext, $allowed)) {
-                $videoname = rand(1000, 999999) . "_" . time() . "." . $ext;
-                $sql = "INSERT INTO `course` (`title`, `videos`, `status`) VALUES ('$title', '$videoname', '$status')";
-                $run = mysqli_query($connec, $sql);
-                if ($run) {
-                    move_uploaded_file($_FILES['video']['tmp_name'][$key], "./coursevideo/" . $videoname);
-                    $uploaded[] = $videoname;
+        if (isset($_POST['title_source']) && $_POST['title_source'] === 'new') {
+            $title = trim(mysqli_real_escape_string($connec, $_POST['new_title'] ?? ''));
+            if (empty($title)) {
+                $msg = "Course title is required.";
+                $msg_type = "danger";
+            } else {
+                $check = mysqli_query($connec, "SELECT title FROM course WHERE TRIM(LOWER(title)) = TRIM(LOWER('$title'))");
+                if ($check && mysqli_num_rows($check) > 0) {
+                    $msg = "A course with this title already exists. Please choose another title or select it from existing courses.";
+                    $msg_type = "warning";
+                    $title = '';
                 }
             }
+        } else {
+            $title = trim(mysqli_real_escape_string($connec, $_POST['existing_title'] ?? ''));
+            if (empty($title)) {
+                $msg = "Please select an existing course or choose to add a new course title.";
+                $msg_type = "danger";
+            }
         }
 
-        if (!empty($uploaded)) {
-            $msg = "✅ Course videos uploaded successfully! (" . count($uploaded) . " video files processed).";
-            $msg_type = "success";
-            // Refresh courses dropdown
-            $courses = mysqli_query($connec, "SELECT DISTINCT title FROM course ORDER BY title ASC");
-        } else {
-            $msg = "❌ No valid video files were uploaded. Allowed formats: MP4, MOV, MKV, WEBM, AVI, WMV.";
-            $msg_type = "danger";
+        if (!empty($title) && !empty($videos[0])) {
+            $allowed = ['mp4', 'mov', 'mkv', 'webm', 'avi', 'wmv'];
+            $uploaded = [];
+
+            if (!is_dir("./coursevideo/")) {
+                mkdir("./coursevideo/", 0777, true);
+            }
+
+            foreach ($videos as $key => $video) {
+                if (empty($video)) continue;
+                $ext = strtolower(pathinfo($video, PATHINFO_EXTENSION));
+                if (in_array($ext, $allowed)) {
+                    $videoname = rand(1000, 999999) . "_" . time() . "." . $ext;
+                    $sql = "INSERT INTO `course` (`title`, `videos`, `status`) VALUES ('$title', '$videoname', '$status')";
+                    $run = mysqli_query($connec, $sql);
+                    if ($run) {
+                        move_uploaded_file($_FILES['video']['tmp_name'][$key], "./coursevideo/" . $videoname);
+                        $uploaded[] = $videoname;
+                    }
+                }
+            }
+
+            if (!empty($uploaded)) {
+                $msg = "✅ Course videos uploaded successfully! (" . count($uploaded) . " video files processed).";
+                $msg_type = "success";
+                // Refresh courses dropdown
+                $courses = mysqli_query($connec, "SELECT DISTINCT title FROM course ORDER BY title ASC");
+            } else {
+                $msg = "❌ No valid video files were uploaded. Allowed formats: MP4, MOV, MKV, WEBM, AVI, WMV.";
+                $msg_type = "danger";
+            }
         }
     }
 }

@@ -37,17 +37,19 @@ if (!defined('ERP_HEAD_RENDERED')) {
 }
 
 // ── 2. Top Header Navigation (Dark Slate #0f172a) ──
+require_once(__DIR__ . '/demo_guard.php');
+
 if (isset($connec)) {
     $aemail = $_SESSION['email'] ?? '';
     $fsql = "SELECT fname, lname, email, role FROM `login` WHERE `email` = '$aemail' LIMIT 1";
     $frun = mysqli_query($connec, $fsql);
     $ffet = ($frun && mysqli_num_rows($frun) > 0) ? mysqli_fetch_assoc($frun) : null;
-    $fname = $ffet['fname'] ?? ($_SESSION['name'] ?? 'User');
-    $lname = $ffet['lname'] ?? '';
+    $fname = $ffet['fname'] ?? ($_SESSION['fname'] ?? ($_SESSION['name'] ?? 'User'));
+    $lname = $ffet['lname'] ?? ($_SESSION['lname'] ?? '');
     $user_role = ucfirst($ffet['role'] ?? ($_SESSION['role'] ?? 'Student'));
 } else {
-    $fname = $_SESSION['name'] ?? 'User';
-    $lname = '';
+    $fname = $_SESSION['fname'] ?? ($_SESSION['name'] ?? 'User');
+    $lname = $_SESSION['lname'] ?? '';
     $user_role = ucfirst($_SESSION['role'] ?? 'Student');
 }
 $fullname = trim($fname . ' ' . $lname);
@@ -71,6 +73,15 @@ $initials = strtoupper(substr($fname, 0, 1) . (!empty($lname) ? substr($lname, 0
       </span>
       <input type="text" placeholder="Search courses, students, modules…" id="topbarSearch" autocomplete="off" class="form-control form-control-sm text-white rounded-3 ps-4" style="background-color: #1e293b !important; border: 1px solid #334155 !important; width: 300px;">
     </div>
+
+    <!-- Demo Mode Indicator Ribbon -->
+    <?php if (is_demo_user()): ?>
+      <div class="d-none d-sm-inline-block ms-2">
+        <span class="badge rounded-pill px-3 py-2 text-warning border border-warning border-opacity-50 shadow-sm" style="background-color: rgba(234, 179, 8, 0.12); font-size: 0.72rem; letter-spacing: 0.04em;">
+          <i class="fas fa-shield-halved me-1 text-warning"></i> DEMO MODE (<?= strtoupper(htmlspecialchars($_SESSION['role'] ?? 'USER')); ?>) • READ-ONLY
+        </span>
+      </div>
+    <?php endif; ?>
   </div>
 
   <!-- Right: Actions & User Dropdown -->
@@ -125,3 +136,14 @@ $initials = strtoupper(substr($fname, 0, 1) . (!empty($lname) ? substr($lname, 0
   </div>
 </header>
 <!-- ════════ END TOP HEADER ════════ -->
+
+<?php if (!empty($_SESSION['demo_notice'])): ?>
+<!-- Demo Flash Notice -->
+<div class="container-fluid px-4 pt-3 pb-0">
+  <div class="alert alert-warning alert-dismissible fade show rounded-3 shadow-sm border-0 d-flex align-items-center gap-2 mb-0" role="alert" style="background-color: #fef3c7; color: #92400e;">
+    <i class="fas fa-circle-info fa-lg flex-shrink-0"></i>
+    <span class="fw-medium small"><?= htmlspecialchars($_SESSION['demo_notice']); ?></span>
+    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+</div>
+<?php unset($_SESSION['demo_notice']); endif; ?>

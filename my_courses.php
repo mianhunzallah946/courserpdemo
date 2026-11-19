@@ -16,7 +16,7 @@ $user_email  = $_SESSION['email'] ?? '';
 // Fetch student profile info
 $studentQuery = mysqli_query($connec, "SELECT fname, lname, email, course_name FROM login WHERE user_id='$user_id' LIMIT 1");
 $studentData  = ($studentQuery && mysqli_num_rows($studentQuery) > 0) ? mysqli_fetch_assoc($studentQuery) : [];
-$studentCourse = trim($studentData['course_name'] ?? '');
+$studentCourse = trim($studentData['course_name'] ?? ($_SESSION['course_name'] ?? ''));
 
 // Auto-heal enrollment table if needed: if student registered with a course_name, ensure enrolled
 if (!empty($studentCourse)) {
@@ -55,6 +55,10 @@ if (!$vrun || mysqli_num_rows($vrun) == 0) {
     if (!empty($studentCourse)) {
         $escaped_sc = mysqli_real_escape_string($connec, $studentCourse);
         $vsql = "SELECT * FROM course WHERE TRIM(LOWER(title)) = TRIM(LOWER('$escaped_sc')) ORDER BY course_id ASC";
+        $vrun = mysqli_query($connec, $vsql);
+    }
+    if ((!$vrun || mysqli_num_rows($vrun) == 0) && !empty($_SESSION['is_demo'])) {
+        $vsql = "SELECT * FROM course WHERE status='public' ORDER BY course_id ASC";
         $vrun = mysqli_query($connec, $vsql);
     }
 }

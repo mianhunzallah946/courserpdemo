@@ -11,30 +11,35 @@ if (isset($_GET['error']) && $_GET['error'] === 'invalid_demo_role') {
 }
 
 if (isset($_POST['login'])) {
-    $email = mysqli_real_escape_string($connec, trim($_POST['email']));
-    $password = mysqli_real_escape_string($connec, trim($_POST['password']));
-
-    if (empty($email) || empty($password)) {
-        $msg = "Please fill in all fields.";
-        $msg_type = "warning";
+    if (!$connec) {
+        $msg = "Database connection error. Please configure your MySQL credentials in connection.php / config.local.php or use the One-Click Demo access below.";
+        $msg_type = "danger";
     } else {
-        $sql = "SELECT * FROM `login` WHERE `email`='$email' AND `password`='$password' LIMIT 1";
-        $run = mysqli_query($connec, $sql);
+        $email = mysqli_real_escape_string($connec, trim($_POST['email']));
+        $password = mysqli_real_escape_string($connec, trim($_POST['password']));
 
-        if ($run && mysqli_num_rows($run) > 0) {
-            $rfet = mysqli_fetch_assoc($run);
-
-            $_SESSION['user_id']    = $rfet['user_id'];
-            $_SESSION['email']      = $rfet['email'];
-            $_SESSION['role']       = $rfet['role'];
-            $_SESSION['name']       = trim($rfet['fname'] . ' ' . $rfet['lname']);
-            $_SESSION['membership'] = $rfet['membership'] ?? 'free';
-
-            header("Location: ./dashboard.php");
-            exit();
+        if (empty($email) || empty($password)) {
+            $msg = "Please fill in all fields.";
+            $msg_type = "warning";
         } else {
-            $msg = "Invalid email address or password.";
-            $msg_type = "danger";
+            $sql = "SELECT * FROM `login` WHERE `email`='$email' AND `password`='$password' LIMIT 1";
+            $run = mysqli_query($connec, $sql);
+
+            if ($run && mysqli_num_rows($run) > 0) {
+                $rfet = mysqli_fetch_assoc($run);
+
+                $_SESSION['user_id']    = $rfet['user_id'];
+                $_SESSION['email']      = $rfet['email'];
+                $_SESSION['role']       = $rfet['role'];
+                $_SESSION['name']       = trim($rfet['fname'] . ' ' . $rfet['lname']);
+                $_SESSION['membership'] = $rfet['membership'] ?? 'free';
+
+                header("Location: ./dashboard.php");
+                exit();
+            } else {
+                $msg = "Invalid email address or password.";
+                $msg_type = "danger";
+            }
         }
     }
 }

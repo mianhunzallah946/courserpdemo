@@ -2,7 +2,9 @@ FROM php:8.2-apache
 
 # Enable Apache mod_rewrite (useful for clean URLs/routing)
 RUN a2enmod rewrite
-
+RUN a2enmod rewrite \
+    && echo "ServerName localhost" >> /etc/apache2/conf-available/servername.conf \
+    && a2enconf servername
 # Install common PHP database extensions (uncomment what you need)
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 

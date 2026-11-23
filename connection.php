@@ -1,22 +1,28 @@
 <?php
 $host = getenv('DB_HOST') ?: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
 $user = getenv('DB_USER') ?: 'thqwjtXwmTAALuQ.root';
-$pass = getenv('DB_PASS') ?: 'Wl8lNwXMQil2iVAi';
-$db   = getenv('DB_NAME') ?: 'sys';
-$port = getenv('DB_PORT') ? (int)getenv('DB_PORT') : 4000;
+$pass = getenv('DB_PASS') ?: 'rs2HhRpuiwsGcZs0';
+$db   = getenv('DB_NAME') ?: 'test';
+$port = (int)(getenv('DB_PORT') ?: 4000);
 
-$connec = mysqli_init();
+$caCert = '/etc/ssl/certs/ca-certificates.crt';
 
-if (getenv('DB_HOST')) {
-    // Secure SSL connection for TiDB Cloud on Render
-    mysqli_ssl_set($connec, NULL, NULL, "/etc/ssl/certs/ca-certificates.crt", NULL, NULL);
-    $connected = mysqli_real_connect($connec, $host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL);
+$conn = mysqli_init();
+
+if (file_exists($caCert)) {
+    mysqli_ssl_set($conn, null, null, $caCert, null, null);
 } else {
-    // Fallback for local testing (XAMPP/WAMP)
-    $connected = mysqli_real_connect($connec, $host, $user, $pass, $db, 3306);
+    mysqli_ssl_set($conn, null, null, null, null, null);
 }
 
-if (!$connected) {
-    die("Database connection failed: " . mysqli_connect_error());
-}
+mysqli_real_connect(
+    $conn,
+    $host,
+    $user,
+    $pass,
+    $db,
+    $port,
+    null,
+    MYSQLI_CLIENT_SSL
+);
 ?>

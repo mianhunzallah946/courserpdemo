@@ -7,16 +7,16 @@ $port = (int)(getenv('DB_PORT') ?: 4000);
 
 $caCert = '/etc/ssl/certs/ca-certificates.crt';
 
-$conn = mysqli_init();
+$connec = mysqli_init();
 
 if (file_exists($caCert)) {
-    mysqli_ssl_set($conn, null, null, $caCert, null, null);
+    mysqli_ssl_set($connec, null, null, $caCert, null, null);
 } else {
-    mysqli_ssl_set($conn, null, null, null, null, null);
+    mysqli_ssl_set($connec, null, null, null, null, null);
 }
 
 mysqli_real_connect(
-    $conn,
+    $connec,
     $host,
     $user,
     $pass,

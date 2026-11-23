@@ -1,8 +1,0 @@
-.git
-.github
-*.zip
-*.log
-stripe_1.30.0_windows_x86_64.zip
-coursevideo/*.mp4
-node_modules
-.htaccess

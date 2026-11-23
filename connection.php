@@ -1,7 +1,7 @@
 <?php
 $host = getenv('DB_HOST') ?: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
 $user = getenv('DB_USER') ?: 'thqwjtXwmTAALuQ.root';
-$pass = getenv('DB_PASS') ?: 'rs2HhRpuiwsGcZs0';
+$pass = getenv('DB_PASS') ?: 'ghwoivSNeXfCv5iV';
 $db   = getenv('DB_NAME') ?: 'test';
 $port = (int)(getenv('DB_PORT') ?: 4000);
 

@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-session_start();
+
 
 // ── 1. Output HTML <head> if not already rendered ──
 if (!defined('ERP_HEAD_RENDERED')) {
